@@ -427,14 +427,16 @@ public class ReadWorkBook {
 		
 		//FIXME :  better hierarchy management
 		Field fi = null;
-		Set<String> cFields = getClassFields(ba.getClass());
+		Set<String> currentFields = getClassFields(ba.getClass());
 		Set<String> p1Fields = getClassFields(ba.getClass().getSuperclass());
 		Set<String> p2Fields = getClassFields(ba.getClass().getSuperclass().getSuperclass());
-		boolean isChildField = listHasProperty(cFields, fieldName);
+		Set<String> rootFields = getClassFields(ba.getClass().getSuperclass().getSuperclass().getSuperclass());
+		boolean isCurrentField = listHasProperty(currentFields, fieldName);
 		boolean isParent1Field = listHasProperty(p1Fields, fieldName);
 		boolean isParent2Field = listHasProperty(p2Fields, fieldName);
+		boolean isRootField = listHasProperty(rootFields, fieldName);
 		
-		if  (isChildField) {
+		if  (isCurrentField) {
 			fi = ba.getClass().getDeclaredField(fieldName);
 		}
 		else if (isParent1Field) {
@@ -443,8 +445,8 @@ public class ReadWorkBook {
 		else if (isParent2Field) {
 			fi = ba.getClass().getSuperclass().getSuperclass().getDeclaredField(fieldName);
 		}
-		else {
-			// What to do if there is a class external fileName
+		else if (isRootField) {
+			fi = ba.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField(fieldName);
 		}
 		
 		Object r=null;
