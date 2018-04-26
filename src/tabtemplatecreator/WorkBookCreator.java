@@ -293,7 +293,14 @@ public class WorkBookCreator {
 	    if (type.getSuperclass() != null) {
 	    	recDefineAllFields(fields, type.getSuperclass());
 	    }
-
+	    if (type.getSuperclass().getSuperclass() != null) {
+	    	recDefineAllFields(fields, type.getSuperclass().getSuperclass());
+	    }
+	    if (type.getSuperclass().getSuperclass().getSuperclass() != null) {
+	    	recDefineAllFields(fields, type.getSuperclass().getSuperclass().getSuperclass());
+	    }
+	  
+	  
 	    return fields;
 	}
 	
