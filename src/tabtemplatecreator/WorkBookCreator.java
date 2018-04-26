@@ -92,7 +92,7 @@ public class WorkBookCreator {
 			 Sheet sheet =null;
 
 			 List<Class<?>> classList=selectJPAClassesFromJar();
-			 
+		
 			 for(Class<?> cl :classList){
 				 
 							         
@@ -132,7 +132,7 @@ public class WorkBookCreator {
 									  
 					 
 										Set<Field> cFields = selectAllDeclaredFields(cl);
-										
+									
 										logger.debug(">>>"+cFields.size());
 										Row row =null;
 										int rowNum = 0;
@@ -293,14 +293,7 @@ public class WorkBookCreator {
 	    if (type.getSuperclass() != null) {
 	    	recDefineAllFields(fields, type.getSuperclass());
 	    }
-	    if (type.getSuperclass().getSuperclass() != null) {
-	    	recDefineAllFields(fields, type.getSuperclass().getSuperclass());
-	    }
-	    if (type.getSuperclass().getSuperclass().getSuperclass() != null) {
-	    	recDefineAllFields(fields, type.getSuperclass().getSuperclass().getSuperclass());
-	    }
-	  
-	  
+	   
 	    return fields;
 	}
 	
