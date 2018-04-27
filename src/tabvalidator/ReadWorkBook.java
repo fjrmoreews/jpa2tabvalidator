@@ -430,11 +430,10 @@ public class ReadWorkBook {
 		Set<String> currentFields = getClassFields(ba.getClass());
 		Set<String> p1Fields = getClassFields(ba.getClass().getSuperclass());
 		Set<String> p2Fields = getClassFields(ba.getClass().getSuperclass().getSuperclass());
-		Set<String> rootFields = getClassFields(ba.getClass().getSuperclass().getSuperclass().getSuperclass());
+		
 		boolean isCurrentField = listHasProperty(currentFields, fieldName);
 		boolean isParent1Field = listHasProperty(p1Fields, fieldName);
 		boolean isParent2Field = listHasProperty(p2Fields, fieldName);
-		boolean isRootField = listHasProperty(rootFields, fieldName);
 		
 		if  (isCurrentField) {
 			fi = ba.getClass().getDeclaredField(fieldName);
@@ -444,9 +443,6 @@ public class ReadWorkBook {
 			}
 		else if (isParent2Field) {
 			fi = ba.getClass().getSuperclass().getSuperclass().getDeclaredField(fieldName);
-		}
-		else if (isRootField) {
-			fi = ba.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField(fieldName);
 		}
 		
 		Object r=null;
