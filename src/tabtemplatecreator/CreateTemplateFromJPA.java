@@ -60,11 +60,13 @@ public class CreateTemplateFromJPA {
  
 			workBookCreator.createSpreadSheetFromClasses();
 		}
-		else {
-			System.err.println("file not found "+templateDirectory.getAbsolutePath());
-			}
-	
+		else if ( !(templateDir==null) && !templateDirectory.exists()) {
+			File dir = new File(templateDir);
+			dir.mkdirs();
+			workBookCreator.createSpreadSheetFromClasses();
 		}
+		
+	}
 	 
 
 
