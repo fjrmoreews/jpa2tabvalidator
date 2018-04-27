@@ -96,91 +96,76 @@ public class WorkBookCreator {
 			 for(Class<?> cl :classList){
 				 
 							         
-						        	FileOutputStream outputStream =null;
-									File sfile =null;
-									Workbook workbook =null;
+				 FileOutputStream outputStream =null;
+				 File sfile =null;
+				 Workbook workbook =null;
 									
-									String clname = cl.getSimpleName().toLowerCase();
-									String templateName=clname;
-									String sheetName="data_info"+"("+clname+")";
-									String extension=null;
+				 String clname = cl.getSimpleName().toLowerCase();
+				 String templateName=clname;
+				 String sheetName="data_info"+"("+clname+")";
+				 String extension=null;
 								     
-									if(this.fileType.toLowerCase().equals("excel")){
-										  extension="xls";
-										  workbook = new HSSFWorkbook();
+				 if(this.fileType.toLowerCase().equals("excel")){
+					 extension="xls";
+					 workbook = new HSSFWorkbook();
  
-									}
-									else if (this.fileType.toLowerCase().equals("oo")){
+				 }
+				 else if (this.fileType.toLowerCase().equals("oo")){
+					 extension="xlsx";
+					 workbook = new XSSFWorkbook();
  
-										  extension="xlsx";
-										 workbook = new XSSFWorkbook();
- 
-									}
-									else if (this.fileType.toLowerCase().equals("csv")){
-										//TODO implement is  ??
-									}
+				 }
+				 else if (this.fileType.toLowerCase().equals("csv")){
+					 //TODO implement is  ??
+				 }
 									
-									if(extension==null){
-										throw new CreateDataParsingException("ouput template not supported or not defined: " + this.fileType);
-									}
-									templateName+="."+extension;
-								    sfile = new File(this.templateDir+"/"+templateName);
+				 if(extension==null){
+					 throw new CreateDataParsingException("ouput template not supported or not defined: " + this.fileType);
+				 }
+				 templateName+="."+extension;
+				 sfile = new File(this.templateDir+"/"+templateName);
 								     
-								     sheet = workbook.createSheet(sheetName);
-									 outputStream = new FileOutputStream(sfile);
+				 sheet = workbook.createSheet(sheetName);
+				 outputStream = new FileOutputStream(sfile);
+												 
+				 Set<Field> cFields = selectAllDeclaredFields(cl);
 									
-									  
-					 
-										Set<Field> cFields = selectAllDeclaredFields(cl);
-									
-										logger.debug(">>>"+cFields.size());
-										Row row =null;
-										int rowNum = 0;
-										row = sheet.createRow(rowNum);
-										int colNum = 0;	
-										for(Field field:cFields){
+				 logger.debug(">>>"+cFields.size());
+				 Row row =null;
+				 int rowNum = 0;
+				 row = sheet.createRow(rowNum);
+				 int colNum = 0;	
+				 
+				 for(Field field:cFields){					
+					 Cell cell = row.createCell(colNum);
+					 cell.setCellValue(field.getName().toUpperCase());
+										 
+					 colNum++;
+				 }
+				 rowNum++;
+				 row = sheet.createRow(rowNum);
+				 colNum = 0;	
+				 for(Field field:cFields){									
+					 Cell cell = row.createCell(colNum);
+					 cell.setCellValue("#"+field.getType().getSimpleName().toLowerCase());
 											
-											 Cell cell = row.createCell(colNum);
-											 cell.setCellValue(field.getName().toUpperCase());
-											 
-											 
-											 colNum++;
-										}
-										rowNum++;
-										row = sheet.createRow(rowNum);
-										colNum = 0;	
-										for(Field field:cFields){
-											
-											 Cell cell = row.createCell(colNum);
-											 cell.setCellValue("#"+field.getType().getSimpleName().toLowerCase());
-											
-											 colNum++;
-										}
-										
-								        
-							 
-								        try {
-								        	
- 
-								         workbook.write(outputStream);
-								         workbook.close();
-								         logger.info(String.format("workbook:write:%s",sfile.getAbsolutePath()));
+					 colNum++;
+				 }						
+	 
+				 try {
+					 workbook.write(outputStream);
+					 workbook.close();
+					 logger.info(String.format("workbook:write:%s",sfile.getAbsolutePath()));       
 								            
-								            
-								            
-								        } catch (FileNotFoundException e) {
-								            e.printStackTrace();
-								        } catch (IOException e) {
-								            e.printStackTrace();
-								        }
+				 } catch (FileNotFoundException e) {
+					 e.printStackTrace();
+				 	} catch (IOException e) {
+				 		e.printStackTrace();
+				 		}
 						
-								        logger.debug("Done");
-			 }
-			 //-
-			 
-			 
-			 
- 
+				 logger.debug("Done");
+				 
+			 	}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
