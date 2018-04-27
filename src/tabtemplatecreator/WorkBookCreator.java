@@ -37,7 +37,7 @@ public class WorkBookCreator {
 
     private final Log logger = LogFactory.getLog(getClass());
 	
-	protected final  String[] PREDEFINED_SORTED_LABELS={"ID","NAME","SAMPLE"};
+	protected final  String[] PREDEFINED_SORTED_LABELS={"ID","NAME","DATEEXP","OPERATOR","DEVICE","PRODCRIT","MOL","SAMPLE"};
 	
 	private String templateDir;
 
@@ -260,7 +260,7 @@ public class WorkBookCreator {
 		int idx=-1;
 		for(String lb:PREDEFINED_SORTED_LABELS){
 			for(Field f:fields){
-				if(f.getName().toUpperCase().equals(lb)){
+				if(f.getName().toUpperCase().startsWith(lb)){
 					idx++;
 					
 					fieldsmap.put(f,idx);
