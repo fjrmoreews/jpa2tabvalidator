@@ -10,7 +10,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -545,7 +547,23 @@ public class ReadWorkBook {
 
 			else if(tp.equals(String.class)) {
 				r=v.toString();
-			}else {
+			}
+			else if(tp.equals(Date.class) || tp.getName().equals("date")){
+				
+				if(v.getClass().equals(String.class)) {
+					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+					Date date = sdf.parse((String) v);
+					if (v.equals(sdf.format(date))) {
+						r = v;
+					}
+					else {
+						
+						throw new Exception ("Invalid date format : " + v + " ==> dd/MM/yyyy format expected");
+					}
+				}
+				
+			}
+			else {
 				throw new Exception("type "+tp.getName()+" not managed ");
 			}
 		}
