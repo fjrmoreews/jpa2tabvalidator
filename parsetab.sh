@@ -5,7 +5,10 @@ JAVA=$(which java)
 OPT=" -Dfile.encoding=UTF-8 -Djava.util.logging.config.file=commons-logging.properties "
  
 LIB=$(echo lib/*.jar | tr ' ' ':')
-CPL=bin:$LIB
+LIB2=$(echo target/*.jar | tr ' ' ':')
+ 
+#CPL=bin:$LIB
+CPL=$LIB:$LIB2
 
 
 ENTRYPOINT=tabvalidator.ValidateEntityFromFile
