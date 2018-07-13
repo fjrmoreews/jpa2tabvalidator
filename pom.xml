@@ -218,7 +218,7 @@
 		<finalName>jpa2tabvalidator</finalName>
 		<resources>
 			<resource>
-				<directory>src/main/resources</directory>
+				<directory>src/main/java</directory>
 				<filtering>true</filtering>
 			</resource>
 		</resources>
@@ -295,6 +295,7 @@
 	</profiles>
 
 	<properties>
+	
 		<java-version>1.8</java-version>
 
  
