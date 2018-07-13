@@ -8,6 +8,6 @@ install:
 #- mvn clean verify 
 
 
-before_script: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V  &&    ls -lR target/
+before_script: bash ./run_getjarlib.sh && ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V  &&  ls -lR target/
 
-script:   bash run_getjarlib.sh && bash parsetab.sh
+script:   bash parsetab.sh

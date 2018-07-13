@@ -4,8 +4,13 @@ JAVA=$(which java)
  
 OPT=" -Dfile.encoding=UTF-8 -Djava.util.logging.config.file=commons-logging.properties "
  
-LIB=$(echo lib/*.jar | tr ' ' ':')
-LIB2=$(echo target/*.jar | tr ' ' ':')
+LIB=$(echo ./lib/*.jar | tr ' ' ':')
+
+echo "---------------"
+ls -l ./target/*.jar
+echo "---------------"
+
+LIB2=$(echo ./target/*.jar | tr ' ' ':')
  
 #CPL=bin:$LIB
 CPL=$LIB:$LIB2
