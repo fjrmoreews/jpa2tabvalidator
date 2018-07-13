@@ -9,4 +9,4 @@ install:
 
 before_script: mvn clean verify
 
-script: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script: mkdir bin && cp target/*jar ./bin/ && bash parsetab.sh
