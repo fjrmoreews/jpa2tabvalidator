@@ -7,6 +7,7 @@ install:
 - mvn -N io.takari:maven:wrapper
 #- mvn clean verify 
 
+
 before_script: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V  &&    ls -lR target/
 
 script:   bash run_getjarlib.sh && bash parsetab.sh
