@@ -5,8 +5,8 @@ sudo: false
 
 install:
 - mvn -N io.takari:maven:wrapper
-#- ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+#- mvn clean verify 
 
-before_script: mvn clean verify && pwd   &&  bash run_getjarlib.sh && ls -lR lib/
+before_script: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V  &&    ls -lR target/
 
-script:  bash parsetab.sh
+script:   bash run_getjarlib.sh && bash parsetab.sh
