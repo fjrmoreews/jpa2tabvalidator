@@ -49,7 +49,7 @@ public class ReadWorkBook {
 
 	
     private final Log logger = LogFactory.getLog(getClass());
-    
+   private boolean  showUnknownFieldException=false;
 	private String file;
 
 	private String fileType;
@@ -269,17 +269,14 @@ public class ReadWorkBook {
 
 						}
 						fieldName=colIdx2FieldN.get(columnIndex);
-						logger.debug(String.format("index:%s, field:%s", columnIndex,fieldName));
-			
-						Object r = defineValueType(v, ba, fieldName);
-
-//:
-						try {
-							PropertyUtils.setSimpleProperty(ba, fieldName, r);
-						}
-						catch(java.lang.NoSuchMethodException e) {
-							
-						}
+					
+						Object r = defineValueType(v, ba, fieldName,cell);
+						logger.debug(String.format("+++ index:%s, field:%s, value:%s", columnIndex,fieldName,r));
+						
+						
+						populateFieldWithInheritance(ba, columnIndex, fieldName, r);
+						
+ 
 						logger.debug("val: "+r);
 					}
 
@@ -424,33 +421,36 @@ public class ReadWorkBook {
 		return false;
 	}
 	
-	 
-	private Object defineValueType(Object v, Object ba, String fieldName) throws Exception {
+	private Field iterateFieldsRec(Class cls , String fieldName, Field fi) throws NoSuchFieldException {
+		Set<String> currentFields = getClassFields(cls);
+		boolean isCurrentField = listHasProperty(currentFields, fieldName);
+		if  (isCurrentField) {
+			fi = cls.getDeclaredField(fieldName);
+		   return fi;
+		}else{
+			if(cls.equals(Object.class)){
+				
+			}else{
+				fi=iterateFieldsRec(cls.getSuperclass(), fieldName, fi);
+			}
+		}
+
+		return fi;
+	}
+	
+	
+	private Object defineValueType(Object v, Object ba, String fieldName, Cell cell) throws Exception {
 		
 		//FIXME :  better hierarchy management
 		Field fi = null;
-		Set<String> currentFields = getClassFields(ba.getClass());
-		Set<String> p1Fields = getClassFields(ba.getClass().getSuperclass());
-		Set<String> p2Fields = getClassFields(ba.getClass().getSuperclass().getSuperclass());
+		fi = iterateFieldsRec(ba.getClass(), fieldName, fi);
 		
-		boolean isCurrentField = listHasProperty(currentFields, fieldName);
-		boolean isParent1Field = listHasProperty(p1Fields, fieldName);
-		boolean isParent2Field = listHasProperty(p2Fields, fieldName);
-		
-		if  (isCurrentField) {
-			fi = ba.getClass().getDeclaredField(fieldName);
-		}
-		else if (isParent1Field) {
-			fi = ba.getClass().getSuperclass().getDeclaredField(fieldName);
-			}
-		else if (isParent2Field) {
-			fi = ba.getClass().getSuperclass().getSuperclass().getDeclaredField(fieldName);
-		}
+	 
 		
 		Object r=null;
 		if(fi!=null) {
 			Class<?> tp = fi.getType();
-			logger.debug(String.format("field: %s, type: %s, value: %s", fieldName,tp,v));
+			logger.info(String.format("=======field: %s, type: %s, value: %s", fieldName,tp,v));
 			if(tp.equals(Long.class) || tp.getName().equals("long") ) {
 
 				if(v.getClass().equals(String.class)) {
@@ -549,17 +549,45 @@ public class ReadWorkBook {
 				r=v.toString();
 			}
 			else if(tp.equals(Date.class) || tp.getName().equals("date")){
-				
+				//logger.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+				//System.out.println("@@@@@@@@@date");
 				if(v.getClass().equals(String.class)) {
-					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+					System.out.println("@@@@@@@@@date:string");
+					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); //extract from annotation or conf+ create conf
 					Date date = sdf.parse((String) v);
+					
 					if (v.equals(sdf.format(date))) {
-						r = v;
+						r = date;
 					}
 					else {
+						System.out.println("@@@@@@@@@date:no  expected SimpleDateFormat compatibility");
 						
+						/*
+						 * 
+    if (HSSFDateUtil.isCellDateFormatted(row.getCell(0))) {
+        System.out.println ("Row No.: " + row.getRowNum ()+ " " + 
+            row.getCell(0).getDateCellValue());
+    }
+						 */
 						throw new Exception ("Invalid date format : " + v + " ==> dd/MM/yyyy format expected");
 					}
+				}else{
+					System.out.println("@@@@@@@@@date:other:"+v.getClass().getSimpleName());
+					System.out.println("@@@"+cell.getDateCellValue());
+				    
+			 
+					
+					
+					if(v.getClass().equals(Double.class)){
+				    	
+				    	try{
+				    		Date date = cell.getDateCellValue();
+				    		r=date;
+				    	}
+				    	catch(Exception ex){
+				    		ex.printStackTrace();
+				    	}
+				    }
 				}
 				
 			}
@@ -574,6 +602,45 @@ public class ReadWorkBook {
 		return r;
 	}
 
+
+
+	
+	private void populateFieldWithInheritance(Object ba, int columnIndex, String fieldName, Object r)
+			throws IllegalAccessException, InvocationTargetException {
+		try {
+			//logger.info(String.format("     ******** index:%s, field:%s, value:%s", columnIndex,fieldName,r));
+			//FIXME : mOL field not found with propertyUtils (setter/getter issue ???)
+			
+			
+			PropertyUtils.setSimpleProperty(ba, fieldName, r);
+		}
+		catch(java.lang.NoSuchMethodException e) {
+			
+			if(showUnknownFieldException==true){
+			e.printStackTrace();
+			
+			for (Field field : ba.getClass().getDeclaredFields()) {
+				 String ev="==NA==";
+				try {
+					
+			     Object ob=PropertyUtils.getSimpleProperty(ba, field.getName()) ;
+				 
+			     ev= ob.toString();
+				 
+				}catch(Exception e2) {
+					e2.printStackTrace();
+				}
+			//	logger.info(String.format("    FIELD_in_cls:  ********  field:%s ", field.getName() ,ev ));
+			}
+			
+			for (Field field : ba.getClass().getSuperclass().getDeclaredFields()) {
+				 
+			//	logger.info(String.format("    SUPER_FIELD_in_cls:  ********  field:%s ", field.getName()));
+			}
+			}
+		}
+	}
+	
 	private void doValidate(HashMap<Integer, String> colIdx2FieldN,
 			int rowIndex, int columnIndex, Object ba) {
 

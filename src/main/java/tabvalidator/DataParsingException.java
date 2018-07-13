@@ -6,4 +6,5 @@ public class DataParsingException extends Exception {
 		super(stopCause);
 	}
 
+	
 }
