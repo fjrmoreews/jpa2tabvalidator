@@ -21,3 +21,13 @@ PARAM=" -n example/tab/baseanalyseDateIssue.xlsx -t oo -g example/generated_mode
 echo $JAVA $OPT -classpath $CPL $ENTRYPOINT $PARAM
 $JAVA $OPT -classpath $CPL $ENTRYPOINT $PARAM
 
+
+if [ $? -eq 0 ]
+then
+  echo "Successfully model validation"
+  exit 0
+else
+  echo "error model validation" >&2
+  exit 1
+fi
+
