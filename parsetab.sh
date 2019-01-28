@@ -6,20 +6,12 @@ OPT=" -Dfile.encoding=UTF-8 -Djava.util.logging.config.file=commons-logging.prop
  
 LIB=$(echo ./lib/*.jar | tr ' ' ':')
 
-echo "---------------"
-ls -l ./target/*.jar
-echo "---------------"
-
-LIB2=$(echo ./target/*.jar | tr ' ' ':')
- 
-#CPL=bin:$LIB
-CPL=$LIB:$LIB2
+CPL=bin:$LIB
 
 
 ENTRYPOINT=tabvalidator.ValidateEntityFromFile
 
 #PARAM=" -n example/tab/lipmuscl.xlsx -t oo -g example/jpa_generated_test2.jar"
-
 
 PARAM=" -n example/tab/baseanalyseDateIssue.xlsx -t oo -g example/generated_model.jar"
 
