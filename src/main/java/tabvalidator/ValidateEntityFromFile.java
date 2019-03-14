@@ -44,14 +44,8 @@ public class ValidateEntityFromFile {
 		String generatejar = cmd.getOptionValue("generatejar");
 		ReadWorkBook f = new ReadWorkBook(inputFileName,inputFileType,generatejar);
 		File file = new File(inputFileName);
-		
-/*		if ( (generatejar.isEmpty()) && !generatejar.exists() ) {
-			System.err.println("jar not found "+generatejar.getAbsolutePath());
-			System.exit(1);
-		}*/
 
 		// Read the given input file or print an error
-		//FIXME : rajouter un vérificateur pour le jar ? car il repère l'erreur mais ne fait rien
 		if ( !(inputFileName==null) && file.exists() ) {
 			f.parseFile();
 		}

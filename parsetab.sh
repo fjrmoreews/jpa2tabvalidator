@@ -13,7 +13,9 @@ ENTRYPOINT=tabvalidator.ValidateEntityFromFile
 
 #PARAM=" -n example/tab/lipmuscl.xlsx -t oo -g example/jpa_generated_test2.jar"
 
-PARAM=" -n example/tab/baseanalyseDateIssue.xlsx -t oo -g example/generated_model.jar"
+#PARAM=" -n example/tab/baseanalyseDateIssue.xlsx -t oo -g example/generated_model.jar"
+
+PARAM=" -n example/tab/classa.xlsx -t oo -g example/model.gen.test1.jar"
 
 echo $JAVA $OPT -classpath $CPL $ENTRYPOINT $PARAM
 $JAVA $OPT -classpath $CPL $ENTRYPOINT $PARAM
