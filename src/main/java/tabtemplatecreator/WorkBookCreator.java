@@ -120,7 +120,9 @@ public class WorkBookCreator {
 				int colNum = 0;	
 				for(Field field:cFields){					
 					Cell cell = row.createCell(colNum);
-					cell.setCellValue(field.getName().toUpperCase());
+					//FIXME
+					//cell.setCellValue(field.getName().toUpperCase());
+					cell.setCellValue(field.getName());
 					colNum++;
 				}
 				rowNum++;
