@@ -34,7 +34,8 @@ public class WorkBookCreator {
 
 	private final Log logger = LogFactory.getLog(getClass());
 
-	// need update
+	// TODO : need update
+	// TODO : create template lost the order of column
 	protected final  String[] PREDEFINED_SORTED_LABELS={"ID","NAME","DATEEXP","OPERATOR","DEVICE","PRODCRIT","MOL","SAMPLE"};
 
 	private String templateDir;

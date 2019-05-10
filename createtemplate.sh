@@ -10,7 +10,7 @@ ENTRYPOINT=tabtemplatecreator.CreateTemplateFromJPA
 
 #PARAM=" -o example/template -t oo -g example/CreateTemplate_generator.jar"
 
-#PARAM=" -o example/template -t oo -g example/model.gen.test1.jar"
+#PARAM=" -o example/template -t oo -g example/model.gen.test3.jar"
 
 PARAM=" -o example/template_inra_dev_test -t oo -g example/model.gen.test4.jar"
 
