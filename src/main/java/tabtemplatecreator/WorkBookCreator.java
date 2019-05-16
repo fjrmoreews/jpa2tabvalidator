@@ -35,7 +35,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+ 
 import uml2rdf.utils.Ordered;
+import uml2rdf.utils.StringFormat;
 import uml2rdf.utils.Xref;
 import java.util.SortedSet;
 import java.util.TreeSet; 
@@ -133,7 +135,12 @@ public class WorkBookCreator {
 					Cell cell = row.createCell(colNum);
 					//FIXME
 					//cell.setCellValue(field.getName().toUpperCase());
-					cell.setCellValue(field.getName());
+					//cell.setCellValue(field.getName());
+			 
+					String str = field.getName();
+					String formatted = StringFormat.firstToUpperCase(str);
+
+					cell.setCellValue(formatted);
 					colNum++;
 				}
 				rowNum++;
@@ -165,6 +172,8 @@ public class WorkBookCreator {
 			e.printStackTrace();
 		}
 	}
+
+
 	
 	// select all class present in jar file. use in the previous function to create a spread sheet template
 	private List<Class<?>> selectJPAClassesFromJar()
@@ -323,7 +332,7 @@ public class WorkBookCreator {
 		return value;
 	
 	}
-	// list all hierarchycall class tree
+	// list all hierarchycal  class tree
 	public Integer recursiveDefineAllFields(Map<Integer,List<Field>> fieldsM, Class<?> type,int level) {
 		List<Field>fields= new ArrayList<Field>();
 		fields.addAll(Arrays.asList(type.getDeclaredFields()));

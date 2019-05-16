@@ -30,7 +30,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-
+import uml2rdf.utils.StringFormat;
 
 import javax.validation.Validation;
 import javax.validation.ValidationException;
@@ -166,7 +166,7 @@ public class ReadWorkBook {
 					if(v!=null ){
 						vc=v.toString().trim();
 						if(!vc.equals("")){
-							fieldName=vc;
+							fieldName=StringFormat.firstToLowerCase(vc);
 							colIdx2FieldN.put(columnIndex, fieldName);
 							maxHeaderColIndex++;
 						}
