@@ -12,9 +12,11 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import uml2rdf.utils.Ordered;
 import uml2rdf.utils.Xref;
+import java.util.SortedSet;
+import java.util.TreeSet; 
 
 public class WorkBookCreator {
 
@@ -43,7 +47,7 @@ public class WorkBookCreator {
 	// TODO : need update
 	// TODO : create template lost the order of column
 	//protected   String[] PREDEFINED_SORTED_LABELS={"ID","NAME","DATEEXP","OPERATOR","DEVICE","PRODCRIT","MOL","SAMPLE"};
-	public Set<String>priorityAttr = new HashSet<String>();
+
 	private String templateDir;
 
 	private String fileType;
@@ -118,7 +122,7 @@ public class WorkBookCreator {
 				outputStream = new FileOutputStream(sfile);
 				
 				// create the col and row of the spread sheet with cl (the class list issue of .jar)
-				Set<Field> cFields = selectAllDeclaredFields(cl);
+				Set<Field> cFields = selectAllDeclaredFields(cl,0);
 
 				logger.debug(">>>"+cFields.size());
 				Row row =null;
@@ -205,75 +209,130 @@ public class WorkBookCreator {
 	}
 	
 	// list all attribute in class and sort them
-	private Set<Field> selectAllDeclaredFields(  Class<?> type){
-		Set<Field> fields = new HashSet<Field>();
+	private Set<Field> selectAllDeclaredFields(  Class<?> type, int level){
+		Map<Integer,List<Field>> fieldsM = new  HashMap<Integer, List<Field>> ();
+		Map<String,Integer>priorityAttr = new LinkedHashMap<String,Integer>();
+		//
+		
+		/*
+		Set<Field> fields = new TreeSet<>(new Comparator<Field>() {
+	        @Override
+	        public int compare(Field o1, Field o2) {
+	            // Define comparing logic here
+	        	
+	            return o1.getName().compareTo(o2.getName());
+	            
+	        }
+	    });
+		*/
 		logger.debug("selectAllDeclaredFields:"+type.getSimpleName());
-		recDefineAllFields(fields, type);
-		Map <Field,Integer> fieldsmap = new HashMap<Field,Integer>();
-		int idx=-1;
+		LinkedHashSet<Field> fieldsn =new LinkedHashSet<Field>();
 		
+		Map <Field,Integer> sortedOrderedAll =new LinkedHashMap<Field,Integer>() ;
+		Map <Field,Integer> sortedOtherAll =new LinkedHashMap<Field,Integer>() ;
+
 		
-		
-		Class<Ordered> annot= new Ordered();
-		for(Field f:fields){
-		    Annotation[] anl = f.getAnnotations();
-			if(anl!=null){
-				for(Annotation a : anl){
-					System.out.println("0"+a);
-				}
-			}
+		level=recursiveDefineAllFields(fieldsM, type,level);
+		System.out.println(level);
+		while(level>=0){
+			List<Field> fields = fieldsM.get(level);
+			level--;
 			
-			if (f.isAnnotationPresent(annot)) {
-				if(!priorityAttr.contains(f.getName())) {
-					priorityAttr.add(f.getName());
+			Map <Field,Integer> fieldsmapOrdered = new HashMap<Field,Integer>();
+			Map <Field,Integer> fieldsmap = new HashMap<Field,Integer>();
+			int idx=-1;
+			
+			 
+			
+			Class<Ordered> annot= Ordered.class;
+			for(Field f:fields){
+			    Annotation[] anl = f.getAnnotations();
+				if(anl!=null){
+					for(Annotation a : anl){
+						System.out.println("0"+a);
+					}
 				}
 				
-				//m.put(field.getName(), objAnnot);
+				if (f.isAnnotationPresent(annot)) {
+					if(!priorityAttr.containsKey(f.getName())) {
+						 Integer index = orderedIndex(f);
+						//priorityAttr.put(f.getName(),index);
+						fieldsmapOrdered.put(f,index);
+					}
+					
+					//m.put(field.getName(), objAnnot);
+				}
 			}
-		}
-		for(String lb:priorityAttr){
+			/*
+			for(String lb:priorityAttr.keySet()){
+				for(Field f:fields){
+					if(f.getName().toUpperCase().startsWith(
+							lb.toUpperCase())){
+						idx++;
+						//getOrderedIndex();
+						fieldsmapO.put(f,idx);
+					}
+				}
+			}*/
+			 /*
+			for(String lb:PREDEFINED_SORTED_LABELS){
+				for(Field f:fields){
+					if(f.getName().toUpperCase().startsWith(lb)){
+						idx++;
+						fieldsmap.put(f,idx);
+					}
+				}
+			}
+			 */
 			for(Field f:fields){
-				if(f.getName().toUpperCase().startsWith(lb)){
+				if(     !fieldsmapOrdered.containsKey(f) 
+						&& !fieldsmap.containsKey(f) ){
 					idx++;
 					fieldsmap.put(f,idx);
 				}
 			}
-		}
-		 /*
-		for(String lb:PREDEFINED_SORTED_LABELS){
-			for(Field f:fields){
-				if(f.getName().toUpperCase().startsWith(lb)){
-					idx++;
-					fieldsmap.put(f,idx);
-				}
-			}
-		}
-		 */
-		for(Field f:fields){
-			if(!fieldsmap.containsKey(f)){
-				idx++;
-				fieldsmap.put(f,idx);
-			}
-		}
-		Map <Field,Integer> sorted =SortMapUtil.sortByValue(fieldsmap);
+			Map <Field,Integer> sortedOrdered =SortMapUtil.sortByValue(fieldsmapOrdered);
+			Map <Field,Integer> sortedOther =SortMapUtil.sortByValue(fieldsmap);
 
-		LinkedHashSet<Field> fieldsn =new LinkedHashSet<>();
-		idx=0;
-		for(Field f:sorted.keySet()){
-			fieldsn.add(f);
-			logger.debug("\t\tfieldName:"+f.getName()+", "+idx);
-			idx++;
+			sortedOrderedAll.putAll(sortedOrdered);
+			sortedOtherAll.putAll(sortedOther);
+			
 		}
+	
+		
+		
+		int ix=0;
+		for(Field f:sortedOrderedAll.keySet()){
+			fieldsn.add(f);
+			logger.debug("\t\tfieldName:"+f.getName()+", "+ix);
+			ix++;
+		}
+		for(Field f:sortedOtherAll.keySet()){
+			fieldsn.add(f);
+			logger.debug("\t\tfieldName:"+f.getName()+", "+ix);
+			ix++;
+		}
+		
+		
 		return fieldsn;
 	}
-
+	private static Integer orderedIndex(Field field) {
+		Ordered anno = (Ordered) field.getAnnotation(Ordered.class);
+		Integer value = anno.index();
+		
+		return value;
+	
+	}
 	// list all hierarchycall class tree
-	public Set<Field> recDefineAllFields(Set<Field> fields, Class<?> type) {
+	public Integer recursiveDefineAllFields(Map<Integer,List<Field>> fieldsM, Class<?> type,int level) {
+		List<Field>fields= new ArrayList<Field>();
 		fields.addAll(Arrays.asList(type.getDeclaredFields()));
+		fieldsM.put(level, fields);
 		logger.debug("\t\trecDefineAllFields:"+type.getSimpleName());
 		if (type.getSuperclass() != null) {
-			recDefineAllFields(fields, type.getSuperclass());
+			level++;
+			level=recursiveDefineAllFields(fieldsM, type.getSuperclass(),level);
 		}
-		return fields;
+		return level;
 	}
 }	
