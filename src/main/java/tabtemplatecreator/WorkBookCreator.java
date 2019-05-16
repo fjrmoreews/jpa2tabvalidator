@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -21,6 +22,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.persistence.OrderBy;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -30,14 +33,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import uml2rdf.utils.Ordered;
+import uml2rdf.utils.Xref;
+
 public class WorkBookCreator {
 
 	private final Log logger = LogFactory.getLog(getClass());
 
 	// TODO : need update
 	// TODO : create template lost the order of column
-	protected final  String[] PREDEFINED_SORTED_LABELS={"ID","NAME","DATEEXP","OPERATOR","DEVICE","PRODCRIT","MOL","SAMPLE"};
-
+	//protected   String[] PREDEFINED_SORTED_LABELS={"ID","NAME","DATEEXP","OPERATOR","DEVICE","PRODCRIT","MOL","SAMPLE"};
+	public Set<String>priorityAttr = new HashSet<String>();
 	private String templateDir;
 
 	private String fileType;
@@ -197,7 +203,7 @@ public class WorkBookCreator {
 		result.toArray(new String[result.size()]);
 		return result ;
 	}
-
+	
 	// list all attribute in class and sort them
 	private Set<Field> selectAllDeclaredFields(  Class<?> type){
 		Set<Field> fields = new HashSet<Field>();
@@ -205,6 +211,35 @@ public class WorkBookCreator {
 		recDefineAllFields(fields, type);
 		Map <Field,Integer> fieldsmap = new HashMap<Field,Integer>();
 		int idx=-1;
+		
+		
+		
+		Class<Ordered> annot= new Ordered();
+		for(Field f:fields){
+		    Annotation[] anl = f.getAnnotations();
+			if(anl!=null){
+				for(Annotation a : anl){
+					System.out.println("0"+a);
+				}
+			}
+			
+			if (f.isAnnotationPresent(annot)) {
+				if(!priorityAttr.contains(f.getName())) {
+					priorityAttr.add(f.getName());
+				}
+				
+				//m.put(field.getName(), objAnnot);
+			}
+		}
+		for(String lb:priorityAttr){
+			for(Field f:fields){
+				if(f.getName().toUpperCase().startsWith(lb)){
+					idx++;
+					fieldsmap.put(f,idx);
+				}
+			}
+		}
+		 /*
 		for(String lb:PREDEFINED_SORTED_LABELS){
 			for(Field f:fields){
 				if(f.getName().toUpperCase().startsWith(lb)){
@@ -213,6 +248,7 @@ public class WorkBookCreator {
 				}
 			}
 		}
+		 */
 		for(Field f:fields){
 			if(!fieldsmap.containsKey(f)){
 				idx++;
