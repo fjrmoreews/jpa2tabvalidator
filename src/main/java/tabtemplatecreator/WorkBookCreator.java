@@ -35,7 +35,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
- 
+import uml2rdf.utils.CustomUnit;
+import uml2rdf.utils.Info;
 import uml2rdf.utils.Ordered;
 import uml2rdf.utils.StringFormat;
 import uml2rdf.utils.Xref;
@@ -43,6 +44,11 @@ import java.util.SortedSet;
 import java.util.TreeSet; 
 
 public class WorkBookCreator {
+
+	private static final String TYPE_TAG = "TYPE_TAG";
+	private static final String ENUM_TAG = "ENUM_TAG";
+	private static final String DESCRIPTION_TAG = "DESCRIPTION_TAG";
+	private static final String UNIT_TAG = "UNIT_TAG";
 
 	private final Log logger = LogFactory.getLog(getClass());
 
@@ -133,6 +139,7 @@ public class WorkBookCreator {
 				int colNum = 0;	
 				for(Field field:cFields){					
 					Cell cell = row.createCell(colNum);
+					
 					//FIXME
 					//cell.setCellValue(field.getName().toUpperCase());
 					//cell.setCellValue(field.getName());
@@ -150,10 +157,23 @@ public class WorkBookCreator {
 				// field the cell of the spread sheet (template)
 				for(Field field:cFields){									
 					Cell cell = row.createCell(colNum);
-					cell.setCellValue("#"+field.getType().getSimpleName().toLowerCase());
+					//type
+					String v=commentField("#",field,TYPE_TAG);
+					v+=commentField(", ",field,ENUM_TAG);
+					v+=commentField(", ",field,UNIT_TAG);
+					cell.setCellValue(v);
+					colNum++;
+				}
+				rowNum++;
+				row = sheet.createRow(rowNum);
+				colNum = 0;	
+				for(Field field:cFields){									
+					Cell cell = row.createCell(colNum);
+					//description
+					cell.setCellValue(commentField("#",field,DESCRIPTION_TAG));
 
 					colNum++;
-				}						
+				}
 				try {
 					workbook.write(outputStream);
 					workbook.close();
@@ -172,6 +192,43 @@ public class WorkBookCreator {
 			e.printStackTrace();
 		}
 	}
+
+private String commentField(String pre,Field field,String tag) {
+	if (tag.equals(TYPE_TAG)) {
+		String s= "";
+		String d=field.getType().getSimpleName().toLowerCase();
+		if(d!=null && !d.equals("")){
+			s+=pre+""+d;
+		}
+		return s;	
+	}
+	else if (tag.equals(ENUM_TAG)) {
+		String s= "";
+		String d=controlledValues(field);
+		if(d!=null && !d.equals("")){
+			s+=pre+" only "+d;
+		}
+		return s;	
+	}
+	else if(tag.equals(DESCRIPTION_TAG)){
+		String s="";
+		String d=description(field);
+		if(d!=null && !d.equals("")){
+			s+=pre+""+d;
+		}
+		return s;
+	}
+	else if(tag.equals(UNIT_TAG)){
+		String s="";
+		String d=unit(field);
+		if(d!=null && !d.equals("")){
+			s+=pre+" unit:"+d;
+		}
+		return s;
+	}
+	return null;
+	
+}
 
 
 	
@@ -325,6 +382,8 @@ public class WorkBookCreator {
 		
 		return fieldsn;
 	}
+	
+	
 	private static Integer orderedIndex(Field field) {
 		Ordered anno = (Ordered) field.getAnnotation(Ordered.class);
 		Integer value = anno.index();
@@ -332,6 +391,50 @@ public class WorkBookCreator {
 		return value;
 	
 	}
+	
+	
+	private static String description(Field field) {
+		
+		Info anno = (Info) field.getAnnotation(Info.class);
+		
+		if(anno!=null){
+		 String value = anno.description();
+		 if(value==null){
+			return "";
+		 }
+		 return value;
+		
+		}else{
+			return "";
+		}
+	
+	}
+
+	private static String unit(Field field) {
+		CustomUnit anno = (CustomUnit) field.getAnnotation(CustomUnit.class);
+		if(anno!=null){
+		 String value = anno.value();
+		 if(value==null){
+			return "";
+		 }
+		  return value;
+		}return "";
+	}
+	private static String controlledValues(Field field) {
+	
+		Info anno = (Info) field.getAnnotation(Info.class);
+		if(anno!=null){
+		String value = anno.enumerate();
+		if(value==null){
+			return "";
+		}
+		return value;
+		}
+		else{
+			return "";
+		}
+	}
+	
 	// list all hierarchycal  class tree
 	public Integer recursiveDefineAllFields(Map<Integer,List<Field>> fieldsM, Class<?> type,int level) {
 		List<Field>fields= new ArrayList<Field>();

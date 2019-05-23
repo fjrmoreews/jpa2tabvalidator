@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class ReadWorkBook {
 
+	private static final String COMMENT_PREFIX = "#";
 	private final Log logger = LogFactory.getLog(getClass());
 	private boolean  showUnknownFieldException=false;
 	private String file;
@@ -139,15 +140,17 @@ public class ReadWorkBook {
 		Iterator<Row> rowIterator = sheet.iterator();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-
+            boolean isCommentRow=false;
 			//row.getCell(2);
 			Iterator<Cell> cellIterator = row.cellIterator();
 			int columnIndex=0;
-
+           
 			// Iteration through each cells and content reading
 			while (cellIterator.hasNext()) {
 				Cell cell = cellIterator.next();
 				Object v =null;
+				
+				
 				if (cell.getCellTypeEnum().equals(CellType.NUMERIC)){
 					v = new Double(cell.getNumericCellValue());
 				}
@@ -157,6 +160,10 @@ public class ReadWorkBook {
 				else{
 					v = cell.toString();
 				}
+				if(columnIndex==0 && v.toString().startsWith(COMMENT_PREFIX)){
+					isCommentRow=true;
+				}
+				
 				logger.debug("Cell value type checked");
 				String fieldName=null;
 				if(rowIndex==0){
@@ -180,6 +187,9 @@ public class ReadWorkBook {
 						stopCause=String.format(" header field index %s has a null value",columnIndex);
 					}
 				}
+				else if(isCommentRow==true){
+					//ignore comment (N lines)
+				}
 				else{
 
 					//data row parsing
@@ -199,7 +209,7 @@ public class ReadWorkBook {
 			if(goon==false){
 				throw new DataParsingException(stopCause);
 			}
-			if(rowIndex!=0){
+			if(rowIndex!=0 && isCommentRow==false){
 
 				//validate each datarow using validation framework  after last col
 				doValidate(colIdx2FieldN, rowIndex, columnIndex, ba); 
