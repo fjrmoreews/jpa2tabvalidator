@@ -48,6 +48,8 @@ public class WorkBookCreator {
 	private static final String TYPE_TAG = "TYPE_TAG";
 	private static final String ENUM_TAG = "ENUM_TAG";
 	private static final String DESCRIPTION_TAG = "DESCRIPTION_TAG";
+	private static final String DESCRIPTION2_TAG = "DESCRIPTION2_TAG";
+	private static final String DESCRIPTION3_TAG = "DESCRIPTION3_TAG";
 	private static final String UNIT_TAG = "UNIT_TAG";
 
 	private final Log logger = LogFactory.getLog(getClass());
@@ -136,6 +138,7 @@ public class WorkBookCreator {
 				Row row =null;
 				int rowNum = 0;
 				row = sheet.createRow(rowNum);
+				//new row : attr name
 				int colNum = 0;	
 				for(Field field:cFields){					
 					Cell cell = row.createCell(colNum);
@@ -150,6 +153,21 @@ public class WorkBookCreator {
 					cell.setCellValue(formatted);
 					colNum++;
 				}
+				
+				
+				//new row : desc
+				rowNum++;
+				row = sheet.createRow(rowNum);
+				colNum = 0;	
+				for(Field field:cFields){									
+					Cell cell = row.createCell(colNum);
+				 
+					cell.setCellValue(commentField("#",field,DESCRIPTION_TAG));
+
+					colNum++;
+				}
+				
+				//new row : type, unit, enumeration
 				rowNum++;
 				row = sheet.createRow(rowNum);
 				colNum = 0;	
@@ -159,21 +177,41 @@ public class WorkBookCreator {
 					Cell cell = row.createCell(colNum);
 					//type
 					String v=commentField("#",field,TYPE_TAG);
-					v+=commentField(", ",field,ENUM_TAG);
-					v+=commentField(", ",field,UNIT_TAG);
+					v+=commentField(",\n ",field,ENUM_TAG);
+					v+=commentField(",\n ",field,UNIT_TAG);
 					cell.setCellValue(v);
 					colNum++;
 				}
+				
+
+				
+			 
+				//new row : desc2
 				rowNum++;
 				row = sheet.createRow(rowNum);
 				colNum = 0;	
 				for(Field field:cFields){									
 					Cell cell = row.createCell(colNum);
-					//description
-					cell.setCellValue(commentField("#",field,DESCRIPTION_TAG));
+			 
+					cell.setCellValue(commentField("#",field,DESCRIPTION2_TAG));
 
 					colNum++;
 				}
+				
+				//new row : desc3
+				rowNum++;
+				row = sheet.createRow(rowNum);
+				colNum = 0;	
+				for(Field field:cFields){									
+					Cell cell = row.createCell(colNum);
+					 
+					cell.setCellValue(commentField("#",field,DESCRIPTION3_TAG));
+
+					colNum++;
+				}
+				
+				
+				
 				try {
 					workbook.write(outputStream);
 					workbook.close();
@@ -212,7 +250,23 @@ private String commentField(String pre,Field field,String tag) {
 	}
 	else if(tag.equals(DESCRIPTION_TAG)){
 		String s="";
-		String d=description(field);
+		String d=description(field,1);
+		if(d!=null && !d.equals("")){
+			s+=pre+""+d;
+		}
+		return s;
+	}
+	else if(tag.equals(DESCRIPTION2_TAG)){
+		String s="";
+		String d=description(field,2);
+		if(d!=null && !d.equals("")){
+			s+=pre+""+d;
+		}
+		return s;
+	}
+	else if(tag.equals(DESCRIPTION3_TAG)){
+		String s="";
+		String d=description(field,3);
 		if(d!=null && !d.equals("")){
 			s+=pre+""+d;
 		}
@@ -295,6 +349,7 @@ private String commentField(String pre,Field field,String tag) {
 		LinkedHashSet<Field> fieldsn =new LinkedHashSet<Field>();
 		
 		Map <Field,Integer> sortedOrderedAll =new LinkedHashMap<Field,Integer>() ;
+		Map <Field,Integer> sortedRevOrderedAll =new LinkedHashMap<Field,Integer>() ;
 		Map <Field,Integer> sortedOtherAll =new LinkedHashMap<Field,Integer>() ;
 
 		
@@ -305,6 +360,8 @@ private String commentField(String pre,Field field,String tag) {
 			level--;
 			
 			Map <Field,Integer> fieldsmapOrdered = new HashMap<Field,Integer>();
+			Map <Field,Integer> revFieldsmapOrdered = new HashMap<Field,Integer>();
+			
 			Map <Field,Integer> fieldsmap = new HashMap<Field,Integer>();
 			int idx=-1;
 			
@@ -320,47 +377,41 @@ private String commentField(String pre,Field field,String tag) {
 				}
 				
 				if (f.isAnnotationPresent(annot)) {
-					if(!priorityAttr.containsKey(f.getName())) {
-						 Integer index = orderedIndex(f);
-						//priorityAttr.put(f.getName(),index);
-						fieldsmapOrdered.put(f,index);
-					}
 					
-					//m.put(field.getName(), objAnnot);
+					
+						Integer index = orderedIndex(f);
+						
+						if(index!=null && index>-1){ 
+						  fieldsmapOrdered.put(f,index);
+						}else{
+							Integer rindex = revOrderedIndex(f);
+							if(rindex!=null && rindex>-1){ 
+								  revFieldsmapOrdered.put(f,rindex);
+							}	
+						}
+						
+					
 				}
 			}
-			/*
-			for(String lb:priorityAttr.keySet()){
-				for(Field f:fields){
-					if(f.getName().toUpperCase().startsWith(
-							lb.toUpperCase())){
-						idx++;
-						//getOrderedIndex();
-						fieldsmapO.put(f,idx);
-					}
-				}
-			}*/
-			 /*
-			for(String lb:PREDEFINED_SORTED_LABELS){
-				for(Field f:fields){
-					if(f.getName().toUpperCase().startsWith(lb)){
-						idx++;
-						fieldsmap.put(f,idx);
-					}
-				}
-			}
-			 */
+			
 			for(Field f:fields){
 				if(     !fieldsmapOrdered.containsKey(f) 
 						&& !fieldsmap.containsKey(f) ){
-					idx++;
-					fieldsmap.put(f,idx);
+					if(     !revFieldsmapOrdered.containsKey(f) ){
+					  idx++;
+					  fieldsmap.put(f,idx);
+					}
+					
 				}
 			}
 			Map <Field,Integer> sortedOrdered =SortMapUtil.sortByValue(fieldsmapOrdered);
+			Map <Field,Integer> sortedRevOrdered =SortMapUtil.sortByValue(revFieldsmapOrdered);
+			
 			Map <Field,Integer> sortedOther =SortMapUtil.sortByValue(fieldsmap);
 
 			sortedOrderedAll.putAll(sortedOrdered);
+			sortedRevOrderedAll.putAll(sortedRevOrdered);
+			
 			sortedOtherAll.putAll(sortedOther);
 			
 		}
@@ -378,7 +429,11 @@ private String commentField(String pre,Field field,String tag) {
 			logger.debug("\t\tfieldName:"+f.getName()+", "+ix);
 			ix++;
 		}
-		
+		for(Field f:sortedRevOrderedAll.keySet()){
+			fieldsn.add(f);
+			logger.debug("\t\tfieldName:"+f.getName()+", "+ix);
+			ix++;
+		}
 		
 		return fieldsn;
 	}
@@ -393,12 +448,35 @@ private String commentField(String pre,Field field,String tag) {
 	}
 	
 	
-	private static String description(Field field) {
+	private static Integer revOrderedIndex(Field field) {
+		Ordered anno = (Ordered) field.getAnnotation(Ordered.class);
+		Integer value = anno.rindex();
+		
+		return value;
+	
+	}
+	
+	private static String description(Field field, int idx) {
 		
 		Info anno = (Info) field.getAnnotation(Info.class);
 		
 		if(anno!=null){
-		 String value = anno.description();
+		 String value = null;
+		 
+		 
+		 if(idx==1) {
+			 value=anno.description();
+		 }
+		 else if(idx==2) {
+			 value=anno.description2();
+		 }
+		 else if(idx==3) {
+			 value=anno.description3();
+		 }
+		
+		 
+		
+		 
 		 if(value==null){
 			return "";
 		 }
